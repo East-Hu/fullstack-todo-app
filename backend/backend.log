@@ -1,0 +1,24 @@
+✅ MySQL connected and migrated!
+🚀 Server starting at http://localhost:8080
+📝 API endpoints:
+   GET    /api/todos      - List all todos
+   POST   /api/todos      - Create a todo
+   PUT    /api/todos/:id   - Update a todo
+   DELETE /api/todos/:id   - Delete a todo
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /api/todos                --> fullstack-todo-app/controllers.(*TodoController).GetTodos-fm (4 handlers)
+[GIN-debug] POST   /api/todos                --> fullstack-todo-app/controllers.(*TodoController).CreateTodo-fm (4 handlers)
+[GIN-debug] PUT    /api/todos/:id            --> fullstack-todo-app/controllers.(*TodoController).UpdateTodo-fm (4 handlers)
+[GIN-debug] DELETE /api/todos/:id            --> fullstack-todo-app/controllers.(*TodoController).DeleteTodo-fm (4 handlers)
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://github.com/gin-gonic/gin/blob/master/docs/doc.md#dont-trust-all-proxies for details.
+[GIN-debug] Listening and serving HTTP on :8080
+[GIN] 2026/02/11 - 12:30:48 | 201 |    9.018333ms |       127.0.0.1 | POST     "/api/todos"
+[GIN] 2026/02/11 - 12:30:48 | 201 |    6.222917ms |       127.0.0.1 | POST     "/api/todos"
+[GIN] 2026/02/11 - 12:30:48 | 201 |     6.52025ms |       127.0.0.1 | POST     "/api/todos"
+signal: terminated
