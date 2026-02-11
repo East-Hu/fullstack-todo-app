@@ -12,11 +12,12 @@
 2. [如何启动项目](#2-如何启动项目)
 3. [数据库管理 (DBeaver)](#3-数据库管理-dbeaver)
 4. [Docker基础与使用](#4-docker基础与使用)
-5. [Go 语言基础速览](#5-go-语言基础速览)
-6. [后端详解: Gin + GORM + MySQL](#6-后端详解-gin--gorm--mysql)
-7. [前端详解: React + Vite + Axios](#7-前端详解-react--vite--axios)
-8. [前后端如何通信](#8-前后端如何通信)
-9. [常用命令速查](#9-常用命令速查)
+5. [多设备协作 (Git + GitHub)](#5-多设备协作-git--github)
+6. [Go 语言基础速览](#6-go-语言基础速览)
+7. [后端详解: Gin + GORM + MySQL](#7-后端详解-gin--gorm--mysql)
+8. [前端详解: React + Vite + Axios](#8-前端详解-react--vite--axios)
+9. [前后端如何通信](#9-前后端如何通信)
+10. [常用命令速查](#10-常用命令速查)
 
 ---
 
@@ -83,7 +84,7 @@ cd frontend
 npm run dev
 ```
 
-**访问: http://localhost:5173**，你可以在页面上点点点来添加数据。
+**访问: http://localhost:5173** (或 127.0.0.1:5173)，你可以在页面上点点点来添加数据。
 
 ---
 
@@ -112,6 +113,9 @@ npm run dev
 - **写 SQL**: 右键数据库 -> **SQL Editor** -> **Open SQL Script**。
   
   ```sql
+  -- 使用todo_app库
+  USE todo_app;
+
   -- 比如手动插入一条数据
   INSERT INTO todos (created_at, updated_at, title, completed) 
   VALUES (NOW(), NOW(), 'Learn SQL via DBeaver', false);
@@ -144,15 +148,123 @@ npm run dev
 
 ---
 
-## 5. Go 语言基础速览
+## 5. 多设备协作 (Git + GitHub)
 
-> 参见原教程，Go 语法部分通用。唯一的区别是导入了不同的数据库驱动。
+既然你有几台电脑想同步开发，最标准的方法就是使用 **Git** 和 **GitHub**。
+
+我已经在你的项目里初始化了 Git 仓库，并配置好了 `.gitignore` (忽略了垃圾文件)。
+
+### 5.1 在当前电脑上 (上传代码)
+
+1. **去 GitHub 创建仓库**: 登录 GitHub，点右上角 `+` -> `New repository`，起名 `fullstack-todo-app`，不要勾选 Initialize with README/gitignore。
+2. **关联远程库**: 在项目根目录下运行 (替换成你的地址):
+   ```bash
+   git remote add origin https://github.com/YOUR_USERNAME/fullstack-todo-app.git
+   git branch -M main
+   git push -u origin main
+   ```
+
+### 5.2 在其他电脑上 (下载代码)
+
+1. **克隆代码**:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/fullstack-todo-app.git
+   cd fullstack-todo-app
+   ```
+
+2. **启动环境** (无论哪台电脑，步骤都一样):
+   ```bash
+   # 1. 启动数据库 (Docker 保证环境一致!)
+   docker compose up -d
+
+   # 2. 启动后端
+   cd backend
+   go mod tidy      # 第一次需要下载依赖
+   go run main.go
+
+   # 3. 启动前端
+   cd ../frontend
+   npm install      # 第一次需要下载依赖
+   npm run dev
+   ```
+
+### 5.3 日常同步流程
+
+- **在电脑 A 写完代码**:
+  ```bash
+  git add .
+  git commit -m "完成了一些功能"
+  git push
+  ```
+
+- **在电脑 B 开始工作前**:
+  ```bash
+  git pull
+  # 如果有新依赖:
+  # go mod tidy (后端)
+  # npm install (前端)
+  ```
 
 ---
 
-## 6. 后端详解: Gin + GORM + MySQL
+## 6. Go 语言基础速览
 
-### 6.1 核心改动：main.go 连接 MySQL
+### 6.1 变量与类型
+Go 是强类型语言，变量声明后类型不能改变。
+
+```go
+// 1. 完整声明
+var name string = "Inkka"
+
+// 2. 类型推导
+var age = 18
+
+// 3. 简短声明 (函数内常用)
+email := "east@example.com"
+```
+
+### 6.2 结构体 (Struct)
+结构体是 Go 中定义对象的唯一方式（没有 Class）。
+
+```go
+type Todo struct {
+    ID        uint   `gorm:"primaryKey"`  // Tag: 告诉 GORM 这是主键
+    Title     string `json:"title"`       // Tag: 告诉 JSON 解析器这个字段叫 title
+    Completed bool
+}
+```
+
+### 6.3 错误处理
+Go 没有 `try-catch`，而是通过返回值返回错误。
+
+```go
+// 函数返回 (结果, 错误)
+func divide(a, b int) (int, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}
+
+// 调用时检查错误
+result, err := divide(10, 0)
+if err != nil {
+    log.Println("出错啦:", err)
+    return
+}
+```
+
+### 6.4 常用关键字
+- `package`: 定义包名，`main` 包是程序入口。
+- `import`: 导入其他包。
+- `func`: 定义函数。
+- `defer`: 延迟执行（常用于关闭数据库连接 `defer db.Close()`）。
+
+---
+
+## 7. 后端详解: Gin + GORM + MySQL
+
+### 7.1 核心改动：main.go 连接 MySQL
 
 ```go
 import (
@@ -179,7 +291,7 @@ func main() {
 - 你会发现，除了连接字符串 (`start options`) 和驱动导入变了，**其他的代码 (Models, Controllers, Routes) 一行都不用改！**
 - GORM 屏蔽了底层数据库的差异（SQL 方言不同），让你用一套 Go 代码操作 MySQL、PostgreSQL 或 SQLite。
 
-### 6.2 MySQL 在 Docker 中的配置
+### 7.2 MySQL 在 Docker 中的配置
 
 查看 `docker-compose.yml`：
 
@@ -205,7 +317,7 @@ volumes:
 
 ---
 
-## 7. 前端详解: React + Vite + Axios
+## 8. 前端详解: React + Vite + Axios
 
 > 前端代码**完全不需要修改**。
 > 
@@ -213,7 +325,7 @@ volumes:
 
 ---
 
-## 8. 前后端如何通信
+## 9. 前后端如何通信
 
 ### HTTP 请求/响应的完整流程
 
@@ -249,7 +361,7 @@ volumes:
 
 ---
 
-## 9. 常用命令速查
+## 10. 常用命令速查
 
 ### 调试 MySQL
 
