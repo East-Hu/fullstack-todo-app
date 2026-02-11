@@ -7,6 +7,8 @@
 ![React](https://img.shields.io/badge/React-18-61DAFB.svg?style=flat&logo=react)
 ![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED.svg?style=flat&logo=docker)
 
+[🇺🇸 English](./README.md) | [🇨🇳 简体中文](./README.zh-CN.md)
+
 ---
 
 ## 📖 Introduction
