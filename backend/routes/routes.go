@@ -2,6 +2,7 @@ package routes
 
 import (
 	"fullstack-todo-app/controllers"
+	"fullstack-todo-app/middleware"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -21,15 +22,25 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	}))
 
 	// Initialize controllers
+	authCtrl := controllers.NewAuthController(db)
 	todoCtrl := controllers.NewTodoController(db)
 
 	// API routes group
 	api := r.Group("/api")
 	{
-		api.GET("/todos", todoCtrl.GetTodos)
-		api.POST("/todos", todoCtrl.CreateTodo)
-		api.PUT("/todos/:id", todoCtrl.UpdateTodo)
-		api.DELETE("/todos/:id", todoCtrl.DeleteTodo)
+		// Public routes (no auth required)
+		api.POST("/register", authCtrl.Register)
+		api.POST("/login", authCtrl.Login)
+
+		// Protected routes (auth required)
+		authorized := api.Group("/")
+		authorized.Use(middleware.JWTAuth())
+		{
+			authorized.GET("/todos", todoCtrl.GetTodos)
+			authorized.POST("/todos", todoCtrl.CreateTodo)
+			authorized.PUT("/todos/:id", todoCtrl.UpdateTodo)
+			authorized.DELETE("/todos/:id", todoCtrl.DeleteTodo)
+		}
 	}
 
 	return r

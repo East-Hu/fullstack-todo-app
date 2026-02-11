@@ -7,6 +7,8 @@
 backend/fullstack-todo-app
 backend/main  # Binary if compiled as 'main'
 backend/vendor/
+backend/.env
+backend/todo-server
 
 # Frontend (Node)
 frontend/node_modules/

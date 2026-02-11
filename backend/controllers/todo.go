@@ -19,10 +19,16 @@ func NewTodoController(db *gorm.DB) *TodoController {
 	return &TodoController{DB: db}
 }
 
-// GetTodos returns all todos
+// getUserID extracts the current user's ID from the gin context
+func getUserID(c *gin.Context) uint {
+	return c.MustGet("userID").(uint)
+}
+
+// GetTodos returns all todos for the current user
 func (tc *TodoController) GetTodos(c *gin.Context) {
+	userID := getUserID(c)
 	var todos []models.Todo
-	result := tc.DB.Find(&todos)
+	result := tc.DB.Where("user_id = ?", userID).Find(&todos)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
 		return
@@ -30,14 +36,16 @@ func (tc *TodoController) GetTodos(c *gin.Context) {
 	c.JSON(http.StatusOK, todos)
 }
 
-// CreateTodo creates a new todo
+// CreateTodo creates a new todo for the current user
 func (tc *TodoController) CreateTodo(c *gin.Context) {
+	userID := getUserID(c)
 	var todo models.Todo
 	if err := c.ShouldBindJSON(&todo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	todo.UserID = userID
 	result := tc.DB.Create(&todo)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
@@ -46,12 +54,13 @@ func (tc *TodoController) CreateTodo(c *gin.Context) {
 	c.JSON(http.StatusCreated, todo)
 }
 
-// UpdateTodo updates a todo by ID
+// UpdateTodo updates a todo by ID (only if it belongs to the current user)
 func (tc *TodoController) UpdateTodo(c *gin.Context) {
+	userID := getUserID(c)
 	id := c.Param("id")
 
 	var todo models.Todo
-	if err := tc.DB.First(&todo, id).Error; err != nil {
+	if err := tc.DB.Where("id = ? AND user_id = ?", id, userID).First(&todo).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Todo not found"})
 		return
 	}
@@ -76,12 +85,13 @@ func (tc *TodoController) UpdateTodo(c *gin.Context) {
 	c.JSON(http.StatusOK, todo)
 }
 
-// DeleteTodo deletes a todo by ID
+// DeleteTodo deletes a todo by ID (only if it belongs to the current user)
 func (tc *TodoController) DeleteTodo(c *gin.Context) {
+	userID := getUserID(c)
 	id := c.Param("id")
 
 	var todo models.Todo
-	if err := tc.DB.First(&todo, id).Error; err != nil {
+	if err := tc.DB.Where("id = ? AND user_id = ?", id, userID).First(&todo).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Todo not found"})
 		return
 	}

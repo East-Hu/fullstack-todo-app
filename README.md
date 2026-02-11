@@ -1,112 +1,134 @@
-# 🚀 Full-Stack Todo App (Go + React + Docker)
+# Full-Stack Todo App (Go + React + Docker + JWT Auth)
 
-> A modern, full-stack application built to demonstrate the integration of **Go (Gin)** backend, **React** frontend, and **MySQL** database using **Docker Compose**.
+> A modern, full-stack application with **user authentication**, built to demonstrate the integration of **Go (Gin)** backend, **React** frontend, **MySQL** database, and **JWT-based auth** using **Docker Compose**.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Go](https://img.shields.io/badge/Go-1.21+-00ADD8.svg?style=flat&logo=go)
-![React](https://img.shields.io/badge/React-18-61DAFB.svg?style=flat&logo=react)
+![React](https://img.shields.io/badge/React-19-61DAFB.svg?style=flat&logo=react)
 ![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED.svg?style=flat&logo=docker)
 
-[🇺🇸 English](./README.md) | [🇨🇳 简体中文](./README.zh-CN.md)
+[English](./README.md) | [简体中文](./README.zh-CN.md)
 
 ---
 
-## 📖 Introduction
+## Introduction
 
-This project is a perfect starting point for developers transitioning from algorithms/basics to **Full-Stack Development**. It implements a complete CRUD workflow with a clean architecture.
+This project is a perfect starting point for developers transitioning from algorithms/basics to **Full-Stack Development**. It implements a complete CRUD workflow with **JWT user authentication**, ensuring each user can only access their own data.
 
-### ✨ Features
-- **Frontend**: Built with **React** and **Vite** for a blazing fast UI experience.
-- **Backend**: RESTful API powered by **Go (Golang)** and **Gin** framework.
-- **Database**: **MySQL 8.0** managed via GORM (ORM library) for seamless data operations.
-- **Containerization**: Entire database environment runs in **Docker**, keeping your local machine clean.
-- **Hot Reload**: Instant feedback during development for both frontend and backend.
+### Features
+- **User Auth**: Register/Login with JWT tokens, bcrypt password hashing
+- **Data Isolation**: Each user only sees their own Todos
+- **Frontend**: Built with **React 19**, **React Router**, and **Vite**
+- **Backend**: RESTful API powered by **Go** and **Gin** framework
+- **Database**: **MySQL 8.0** managed via **GORM** (ORM library)
+- **Containerization**: Database runs in **Docker**, keeping your local machine clean
+- **Environment Variables**: Sensitive config managed via `.env` files
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Component | Technology | Description |
 |-----------|------------|-------------|
-| **Frontend** | React, Vite, Axios | Modern UI library with fast build tool |
-| **Backend** | Go, Gin, GORM | High-performance compiled language |
+| **Frontend** | React 19, React Router, Vite, Axios | Modern UI with client-side routing |
+| **Backend** | Go, Gin, GORM, JWT | High-performance API with auth middleware |
+| **Auth** | bcrypt, golang-jwt | Password hashing + JSON Web Tokens |
 | **Database** | MySQL 8.0 | Industrial-standard relational database |
 | **Infrastructure** | Docker Compose | Container orchestration for development |
 
 ---
 
-## 🚀 Getting Started
+## API Endpoints
+
+| Method | Path | Description | Auth Required |
+|--------|------|-------------|:------------:|
+| POST | /api/register | Register a new user | No |
+| POST | /api/login | Login and get JWT token | No |
+| GET | /api/todos | List your todos | Yes |
+| POST | /api/todos | Create a todo | Yes |
+| PUT | /api/todos/:id | Update a todo | Yes |
+| DELETE | /api/todos/:id | Delete a todo | Yes |
+
+---
+
+## Getting Started
 
 ### Prerequisites
 - [Docker Desktop](https://www.docker.com/products/docker-desktop)
 - [Go](https://go.dev/) (v1.21+)
 - [Node.js](https://nodejs.org/) (v18+)
 
-### 1️⃣ Clone the Repository
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/YOUR_USERNAME/fullstack-todo-app.git
 cd fullstack-todo-app
 ```
 
-### 2️⃣ Start the Database (Docker)
-We use Docker for MySQL so you don't have to install it manually.
+### 2. Start the Database (Docker)
 ```bash
 docker compose up -d
 ```
-> This starts MySQL on port `3307` (mapped from container's 3306).
 
-### 3️⃣ Start the Backend
+### 3. Start the Backend
 ```bash
 cd backend
-go mod tidy       # Install Go dependencies
-go run main.go    # Start API server at http://localhost:8080
+cp .env.example .env   # Create env file (or create .env manually)
+go mod tidy             # Install Go dependencies
+go run main.go          # Start API server at http://localhost:8080
 ```
 
-### 4️⃣ Start the Frontend
+### 4. Start the Frontend
 Open a **new terminal**:
 ```bash
 cd frontend
-npm install       # Install Node dependencies
-npm run dev       # Start UI at http://localhost:5173
+npm install             # Install Node dependencies
+npm run dev             # Start UI at http://localhost:5173
 ```
 
-🎉 **That's it! Visit [http://localhost:5173](http://localhost:5173) to see your app.**
+**Visit [http://localhost:5173](http://localhost:5173)** — register an account and start managing your Todos!
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
-```bash
+```
 fullstack-todo-app/
-├── docker-compose.yml    # Database configuration
-├── TUTORIAL.md           # 📚 Detailed Step-by-Step Tutorial
-├── ADVANCED_ROADMAP.md   # 🚀 Future Learning Path (Mini-Amazon)
+├── docker-compose.yml          # MySQL database config
 ├── backend/
-│   ├── main.go           # Entry point (Server & DB connection)
-│   ├── models/           # Database schemas (GORM structs)
-│   ├── controllers/      # Business logic & Handlers
-│   └── routes/           # API Route definitions
+│   ├── .env                    # Environment variables (DB, JWT secret)
+│   ├── main.go                 # Entry point (DB connection, server startup)
+│   ├── models/
+│   │   ├── user.go             # User model (username, password hash)
+│   │   └── todo.go             # Todo model (title, completed, user_id)
+│   ├── controllers/
+│   │   ├── auth.go             # Register & Login handlers
+│   │   └── todo.go             # CRUD handlers (user-scoped)
+│   ├── middleware/
+│   │   └── auth.go             # JWT validation middleware
+│   └── routes/
+│       └── routes.go           # Route definitions
 └── frontend/
     ├── src/
-    │   ├── App.jsx       # Main UI Component
-    │   └── main.jsx      # React Entry point
-    └── vite.config.js    # Build configuration
+    │   ├── main.jsx            # React entry (BrowserRouter)
+    │   ├── App.jsx             # Route container (auth state)
+    │   └── pages/
+    │       ├── Login.jsx       # Login/Register page
+    │       └── Todos.jsx       # Todo management page
+    └── vite.config.js          # Build config (API proxy)
 ```
 
 ---
 
-## 📚 Learning Resources
+## Learning Resources
 
-This repository includes a comprehensive internal tutorial:
-- **[TUTORIAL.md](./TUTORIAL.md)**: A complete guide explaining every line of code, Docker setup, and basic Go syntax.
-- **[ADVANCED_ROADMAP.md](./ADVANCED_ROADMAP.md)**: A roadmap to take this project to the next level (Authentication, Redis, Microservices).
+This repository includes a comprehensive tutorial:
+- **[TUTORIAL.md](./TUTORIAL.md)**: A complete guide (23 chapters) covering every line of code — from Go basics and Gin framework, through JWT authentication theory, to React Router and the full request lifecycle.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Feel free to fork this project and submit Pull Requests.
-Any contributions you make are **greatly appreciated**.
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
@@ -116,6 +138,6 @@ Any contributions you make are **greatly appreciated**.
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
